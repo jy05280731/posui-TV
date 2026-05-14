@@ -35,7 +35,6 @@ interface SettingsConfig {
     isUpdateLogEnabled?: boolean;
     isScrollChromeAnimationEnabled?: boolean;
   };
-  // 新增视频源配置
   videoSources?: Array<{
     name: string;
     url: string;
@@ -80,7 +79,6 @@ export const initialConfig: SettingsConfig = {
     isUpdateLogEnabled: true,
     isScrollChromeAnimationEnabled: true,
   },
-  // 这里就是你要的8个视频源，已经写死在配置里了
   videoSources: [
     {"name":"高清主源1-阿冰资源","url":"https://api.apibdzy.com/api.php/provide/vod/","isEnabled":true},
     {"name":"高清主源2-福利资源","url":"https://cj.lziapi.com/api.php/provide/vod/","isEnabled":true},
