@@ -16,73 +16,78 @@ import { DEFAULT_SETTINGS } from '@/shared/config/settings.config'
 import { v4 as uuidv4 } from 'uuid'
 import { useSettingStore } from './settingStore'
 
-// 保持向后兼容的类型别名
 export type VideoApi = VideoSource
 
+// ========== 你的 24 个内置视频源 ==========
+const BUILTIN_SOURCES: VideoSource[] = [
+  {"name":"高清主源1-阿冰资源","url":"https://api.apibdzy.com/api.php/provide/vod/","isEnabled":true,"id":"builtin-1","timeout":10000,"retry":2,"updatedAt":new Date()},
+  {"name":"高清主源2-福利资源","url":"https://cj.lziapi.com/api.php/provide/vod/","isEnabled":true,"id":"builtin-2","timeout":10000,"retry":2,"updatedAt":new Date()},
+  {"name":"高清主源3-闪电资源","url":"https://sdyzyapi.com/api.php/provide/vod/","isEnabled":true,"id":"builtin-3","timeout":10000,"retry":2,"updatedAt":new Date()},
+  {"name":"高清主源4-魔都资源","url":"https://mdzypi.com/api.php/provide/vod/","isEnabled":true,"id":"builtin-4","timeout":10000,"retry":2,"updatedAt":new Date()},
+  {"name":"备用源1-小盒子主仓","url":"https://xhztv.top/xhz/","isEnabled":true,"id":"builtin-5","timeout":10000,"retry":2,"updatedAt":new Date()},
+  {"name":"备用源2-4K仓","url":"https://xhztv.top/4k.json","isEnabled":true,"id":"builtin-6","timeout":10000,"retry":2,"updatedAt":new Date()},
+  {"name":"备用源3-暴风资源","url":"https://bfzyapi.com/api.php/provide/vod/","isEnabled":true,"id":"builtin-7","timeout":10000,"retry":2,"updatedAt":new Date()},
+  {"name":"备用源4-高天流云镜像","url":"https://raw.githubusercontent.com/gaotianliuyun/gao/master/js.json","isEnabled":true,"id":"builtin-8","timeout":10000,"retry":2,"updatedAt":new Date()},
+  {"name":"✨ 单仓-饭太硬","url":"http://饭太硬.top/tv","isEnabled":true,"id":"builtin-9","timeout":10000,"retry":2,"updatedAt":new Date()},
+  {"name":"✨ 单仓-肥猫","url":"http://肥猫.com","isEnabled":true,"id":"builtin-10","timeout":10000,"retry":2,"updatedAt":new Date()},
+  {"name":"✨ 单仓-骚零Ray","url":"https://100km.top/0","isEnabled":true,"id":"builtin-11","timeout":10000,"retry":2,"updatedAt":new Date()},
+  {"name":"✨ 单仓-奇艺东少4K","url":"https://szyyds.cn/tv/x.json","isEnabled":true,"id":"builtin-12","timeout":10000,"retry":2,"updatedAt":new Date()},
+  {"name":"✨ 单仓-摸鱼4K","url":"http://我不是.摸鱼儿.top","isEnabled":true,"id":"builtin-13","timeout":10000,"retry":2,"updatedAt":new Date()},
+  {"name":"✨ 单仓-喵影视","url":"http://meowtv.top/tv","isEnabled":true,"id":"builtin-14","timeout":10000,"retry":2,"updatedAt":new Date()},
+  {"name":"✨ 单仓-高天流云","url":"https://gcore.jsdelivr.net/gh/gaotianliuyun/gao@master/js.json","isEnabled":true,"id":"builtin-15","timeout":10000,"retry":2,"updatedAt":new Date()},
+  {"name":"✨ 单仓-OK猫开发","url":"http://ok321.top/ok","isEnabled":true,"id":"builtin-16","timeout":10000,"retry":2,"updatedAt":new Date()},
+  {"name":"✨ 单仓-小苹果","url":"https://agit.ai/nbwzlyd/xiaopingguo/raw/branch/master/xiaopingguo/xiaopingguo.json","isEnabled":true,"id":"builtin-17","timeout":10000,"retry":2,"updatedAt":new Date()},
+  {"name":"✨ 单仓-箩筐","url":"http://tvbox.王二小放牛娃.top","isEnabled":true,"id":"builtin-18","timeout":10000,"retry":2,"updatedAt":new Date()},
+  {"name":"✨ 单仓-环宇轩","url":"https://gitee.com/hyxuan_admin/xnf/raw/master/xnfx.json","isEnabled":true,"id":"builtin-19","timeout":10000,"retry":2,"updatedAt":new Date()},
+  {"name":"📦 多仓-欧歌","url":"http://tv.nxog.top","isEnabled":true,"id":"builtin-20","timeout":10000,"retry":2,"updatedAt":new Date()},
+  {"name":"📦 多仓-天微","url":"https://tvkj.top/DC.txt","isEnabled":true,"id":"builtin-21","timeout":10000,"retry":2,"updatedAt":new Date()},
+  {"name":"📦 多仓-OK猫","url":"https://jihulab.com/okcaptain/kko/-/raw/main/tv.txt","isEnabled":true,"id":"builtin-22","timeout":10000,"retry":2,"updatedAt":new Date()},
+  {"name":"📦 多仓-自留地","url":"https://gitlab.com/ygbh1/666/-/raw/main/dcang/ygbh.json","isEnabled":true,"id":"builtin-23","timeout":10000,"retry":2,"updatedAt":new Date()},
+  {"name":"📦 多仓-影帆","url":"http://52bsj.vip:98/wuai","isEnabled":true,"id":"builtin-24","timeout":10000,"retry":2,"updatedAt":new Date()},
+]
+
+// ========== 辅助函数 ==========
+function toSourceStore(state: ApiState): SourceStore {
+  return { sources: state.videoAPIs, version: 1 }
+}
+function fromSourceStore(store: SourceStore): VideoSource[] {
+  return store.sources
+}
+
+// ========== 类型定义 ==========
 interface ApiState {
-  // 视频源列表
   videoAPIs: VideoSource[]
-  // 广告过滤开关
   adFilteringEnabled: boolean
 }
 
 interface ApiActions {
-  // 设置 API 启用状态
   setApiEnabled: (apiId: string, enabled: boolean) => void
-  // 添加视频 API
   addAndUpdateVideoAPI: (api: VideoSource) => void
-  // 删除视频 API
   removeVideoAPI: (apiId: string) => void
-  // 设置广告过滤
   setAdFilteringEnabled: (enabled: boolean) => void
-  // 全选 API
   selectAllAPIs: () => void
-  // 取消全选
   deselectAllAPIs: () => void
-  // 初始化环境变量中的视频源
   initializeEnvSources: () => void
-  // 批量导入视频源
   importVideoAPIs: (apis: VideoSource[]) => void
-  // 获取选中的视频源
   getSelectedAPIs: () => VideoSource[]
-  // 重置视频源
   resetVideoSources: () => Promise<void>
-  // 替换指定订阅的所有视频源（保留用户之前的 isEnabled 设置）
   replaceSubscriptionSources: (subscriptionId: string, sources: VideoSource[]) => void
-  // 移除指定订阅的所有视频源
   removeSubscriptionSources: (subscriptionId: string) => void
-  // 按 ID 数组顺序重排视频源（拖拽排序 / 一键按延迟排序）
   reorderVideoAPIs: (orderedIds: string[]) => void
 }
 
 type ApiStore = ApiState & ApiActions
 
-/**
- * 将ApiState转换为SourceStore格式以便使用cms-core纯函数
- */
-function toSourceStore(state: ApiState): SourceStore {
-  return {
-    sources: state.videoAPIs,
-    version: 1,
-  }
-}
-
-/**
- * 从SourceStore提取sources到videoAPIs
- */
-function fromSourceStore(store: SourceStore): VideoSource[] {
-  return store.sources
-}
-
+// ========== Store 创建 ==========
 export const useApiStore = create<ApiStore>()(
   devtools(
     persist(
       immer<ApiStore>((set, get) => ({
-        videoAPIs: [],
+        // 初始状态就包含你的 24 个内置源
+        videoAPIs: BUILTIN_SOURCES,
         adFilteringEnabled: true,
 
-        // Actions - 使用cms-core纯函数
-        setApiEnabled: (apiId: string, enabled: boolean) => {
+        setApiEnabled: (apiId, enabled) => {
           set(state => {
             const store = toSourceStore(state)
             const newStore = setSourceEnabled(store, apiId, enabled)
@@ -90,32 +95,22 @@ export const useApiStore = create<ApiStore>()(
           })
         },
 
-        addAndUpdateVideoAPI: (api: VideoSource) => {
+        addAndUpdateVideoAPI: (api) => {
           set(state => {
             const store = toSourceStore(state)
-            const isExisting = store.sources.some(
-              s => s.id === api.id || (s.name === api.name && s.url === api.url),
-            )
-            // addSource会自动处理添加或更新
-            const newStore = addSource(store, {
-              ...api,
-              updatedAt: new Date(),
-            })
+            const isExisting = store.sources.some(s => s.id === api.id || (s.name === api.name && s.url === api.url))
+            const newStore = addSource(store, { ...api, updatedAt: new Date() })
             const nextSources = fromSourceStore(newStore)
-
-            // 新增源默认置顶；更新源保持原有顺序
             if (!isExisting) {
               const inserted = nextSources.find(source => source.id === api.id)
-              state.videoAPIs = inserted
-                ? [inserted, ...nextSources.filter(source => source.id !== inserted.id)]
-                : nextSources
+              state.videoAPIs = inserted ? [inserted, ...nextSources.filter(s => s.id !== inserted.id)] : nextSources
             } else {
               state.videoAPIs = nextSources
             }
           })
         },
 
-        removeVideoAPI: (apiId: string) => {
+        removeVideoAPI: (apiId) => {
           set(state => {
             const store = toSourceStore(state)
             const newStore = removeSource(store, apiId)
@@ -123,10 +118,8 @@ export const useApiStore = create<ApiStore>()(
           })
         },
 
-        setAdFilteringEnabled: (enabled: boolean) => {
-          set(state => {
-            state.adFilteringEnabled = enabled
-          })
+        setAdFilteringEnabled: (enabled) => {
+          set(state => { state.adFilteringEnabled = enabled })
         },
 
         selectAllAPIs: () => {
@@ -146,10 +139,10 @@ export const useApiStore = create<ApiStore>()(
         },
 
         initializeEnvSources: async () => {
+          // 环境变量源作为补充，不会覆盖已有内置源
           const envSources = await getInitialVideoSources()
-          console.log(envSources)
-          set(state => {
-            if (envSources.length > 0) {
+          if (envSources.length > 0) {
+            set(state => {
               const store = toSourceStore(state)
               const { store: newStore } = importSources(store, envSources, {
                 defaultTimeout: useSettingStore.getState().network.defaultTimeout,
@@ -157,18 +150,14 @@ export const useApiStore = create<ApiStore>()(
                 skipInvalid: true,
               })
               state.videoAPIs = fromSourceStore(newStore)
-            }
-          })
+            })
+          }
         },
 
-        importVideoAPIs: (apis: VideoSource[]) => {
+        importVideoAPIs: (apis) => {
           set(state => {
             const store = toSourceStore(state)
-            // 为没有ID的源生成UUID
-            const apisWithIds = apis.map(api => ({
-              ...api,
-              id: api.id || uuidv4(),
-            }))
+            const apisWithIds = apis.map(api => ({ ...api, id: api.id || uuidv4() }))
             const { store: newStore } = importSources(store, apisWithIds, {
               defaultTimeout: useSettingStore.getState().network.defaultTimeout,
               defaultRetry: useSettingStore.getState().network.defaultRetry,
@@ -185,56 +174,44 @@ export const useApiStore = create<ApiStore>()(
 
         resetVideoSources: async () => {
           set(state => {
-            state.videoAPIs = []
+            state.videoAPIs = BUILTIN_SOURCES  // 重置回你的内置源
           })
           await get().initializeEnvSources()
         },
 
-        replaceSubscriptionSources: (subscriptionId: string, sources: VideoSource[]) => {
+        replaceSubscriptionSources: (subscriptionId, sources) => {
           set(state => {
             const prefix = `sub:${subscriptionId}:`
-            // 记录旧源的 isEnabled 状态（按 name+url 匹配，因为 index 可能变化）
             const oldEnabledMap = new Map<string, boolean>()
-            state.videoAPIs
-              .filter(s => s.id.startsWith(prefix))
-              .forEach(s => {
-                oldEnabledMap.set(`${s.name}||${s.url}`, s.isEnabled)
-              })
-
-            // 移除旧的订阅源
+            state.videoAPIs.filter(s => s.id.startsWith(prefix)).forEach(s => {
+              oldEnabledMap.set(`${s.name}||${s.url}`, s.isEnabled)
+            })
             const nonSubscriptionSources = state.videoAPIs.filter(s => !s.id.startsWith(prefix))
-
-            // 对新源应用之前的 isEnabled 设置
             const newSources = sources.map(s => {
               const key = `${s.name}||${s.url}`
               const prevEnabled = oldEnabledMap.get(key)
-              return {
-                ...s,
-                isEnabled: prevEnabled !== undefined ? prevEnabled : s.isEnabled,
-              }
+              return { ...s, isEnabled: prevEnabled !== undefined ? prevEnabled : s.isEnabled }
             })
-
-            // 手动源在前，订阅源追加到末尾
             state.videoAPIs = [...nonSubscriptionSources, ...newSources]
           })
         },
 
-        removeSubscriptionSources: (subscriptionId: string) => {
+        removeSubscriptionSources: (subscriptionId) => {
           set(state => {
             const prefix = `sub:${subscriptionId}:`
             state.videoAPIs = state.videoAPIs.filter(s => !s.id.startsWith(prefix))
           })
         },
 
-        reorderVideoAPIs: (orderedIds: string[]) => {
+        reorderVideoAPIs: (orderedIds) => {
           set(state => {
-            const idIndexMap = new Map(orderedIds.map((id, index) => [id, index]))
+            const idIndexMap = new Map(orderedIds.map((id, idx) => [id, idx]))
             state.videoAPIs = [...state.videoAPIs].sort((a, b) => {
-              const indexA = idIndexMap.get(a.id)
-              const indexB = idIndexMap.get(b.id)
-              if (indexA !== undefined && indexB !== undefined) return indexA - indexB
-              if (indexA !== undefined) return -1
-              if (indexB !== undefined) return 1
+              const idxA = idIndexMap.get(a.id)
+              const idxB = idIndexMap.get(b.id)
+              if (idxA !== undefined && idxB !== undefined) return idxA - idxB
+              if (idxA !== undefined) return -1
+              if (idxB !== undefined) return 1
               return 0
             })
           })
@@ -242,30 +219,28 @@ export const useApiStore = create<ApiStore>()(
       })),
       {
         name: 'ouonnki-tv-api-store',
-        version: 6,
+        version: 7,  // 增加版本号，避免旧缓存覆盖
         migrate: (persistedState: unknown, version: number) => {
           const state = persistedState as Partial<ApiState>
-
-          if (version < 4) {
-            state.videoAPIs = []
+          // 如果迁移前版本低于7，且没有 videoAPIs 或为空，则填充内置源
+          if (version < 7) {
+            if (!state.videoAPIs || state.videoAPIs.length === 0) {
+              state.videoAPIs = BUILTIN_SOURCES
+            }
           }
-
-          if (version < 5) {
-            state.videoAPIs =
-              state.videoAPIs?.map(api => ({
-                ...api,
-                timeout: DEFAULT_SETTINGS.network.defaultTimeout,
-                retry: DEFAULT_SETTINGS.network.defaultRetry,
-                updatedAt: new Date(),
-              })) || []
+          // 补齐默认字段
+          if (state.videoAPIs) {
+            state.videoAPIs = state.videoAPIs.map(api => ({
+              ...api,
+              timeout: api.timeout ?? DEFAULT_SETTINGS.network.defaultTimeout,
+              retry: api.retry ?? DEFAULT_SETTINGS.network.defaultRetry,
+              updatedAt: api.updatedAt ?? new Date(),
+            }))
           }
-
           return state
         },
       },
     ),
-    {
-      name: 'ApiStore', // DevTools 中显示的名称
-    },
+    { name: 'ApiStore' },
   ),
 )
