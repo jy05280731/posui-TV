@@ -10,10 +10,6 @@ import AppRouter from './router'
 import { Toaster } from '@/shared/components/ui/sonner'
 import { TooltipProvider } from '@/shared/components/ui/tooltip'
 
-// 👇 新增：从你改好的配置文件里导入视频源
-import { initialConfig } from '@/shared/config/initialConfig'
-import { useVideoStore } from '@/shared/stores/videos'
-
 import { Analytics } from '@vercel/analytics/react'
 import { SpeedInsights } from '@vercel/speed-insights/react'
 
@@ -33,8 +29,5 @@ const app = (
     </TooltipProvider>
   </ThemeProvider>
 )
-
-// 👇 新增：初始化视频源数据
-useVideoStore.getState().addVideos(initialConfig.videoSources)
 
 createRoot(root).render(import.meta.env.DEVELOPMENT ? <StrictMode>{app}</StrictMode> : app)
